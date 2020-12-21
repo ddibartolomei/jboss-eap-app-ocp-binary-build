@@ -1,0 +1,3 @@
+embed-server --std-out=echo  --server-config=standalone-openshift.xml
+/subsystem=datasources/xa-data-source=apporclxa-APPORCLXA:write-attribute(name=same-rm-override,value=false)
+quit

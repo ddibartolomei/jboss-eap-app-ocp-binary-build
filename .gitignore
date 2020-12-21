@@ -34,3 +34,4 @@ build/
 TODO
 .DS_Store
 b2i/
+tmp/

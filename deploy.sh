@@ -28,7 +28,7 @@ CONFIG_MAP_NAME="${APP}-config"
 CONFIG_MAP_RELATIVE_SOURCE_DIR="openshift/config/"
 CONFIG_MAP_MOUNT_DIR="/opt/config"
 SECRET_NAME="${APP}-config-data"
-SECRET_FILE="openshift/config-data-secret.yaml"
+SECRET_ENV_FILE="openshift/config-data-secret.env"
 
 echo "----------------------------------------------------------------------"
 echo "PARAMETERS"
@@ -36,13 +36,20 @@ echo "----------------------------------------------------------------------"
 echo "Project namespace: ${PROJECT}"
 echo "Application name: ${APP}"
 echo "Config map ${CONFIG_MAP_NAME} mapping content of relative path ${CONFIG_MAP_RELATIVE_SOURCE_DIR} to ${CONFIG_MAP_MOUNT_DIR}"
-echo "Secret ${SECRET_NAME} mapping content of file ${SECRET_FILE}"
+echo "Secret ${SECRET_NAME} mapping content of file ${SECRET_ENV_FILE}"
 echo ""
 
 echo "Reading project version from pom.xml"
 BUILD_TAG=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
 echo "Build tag set to: ${BUILD_TAG}"
-TARGET_IMAGE=docker-registry.default.svc:5000/${PROJECT}/${APP}:${BUILD_TAG}
+
+# OCP 3
+IMAGE_REGISTRY="docker-registry.default.svc"
+
+# OCP 4
+# IMAGE_REGISTRY="image-registry.openshift-image-registry.svc"
+
+TARGET_IMAGE="${IMAGE_REGISTRY}:5000/${PROJECT}/${APP}:${BUILD_TAG}"
 
 echo "Building app artifact"
 mvn clean package -Dmaven.javadoc.skip=true -DskipTests
@@ -70,9 +77,12 @@ fi
 echo "Updating config map ${CONFIG_MAP_NAME}"
 oc create configmap ${CONFIG_MAP_NAME} --from-file=${CONFIG_MAP_RELATIVE_SOURCE_DIR} --dry-run -o yaml -n ${PROJECT} | oc replace -n ${PROJECT} -f -
 
-echo "Updating and binding secret defined in file ${SECRET_FILE}"
-oc apply -f ${SECRET_FILE} -n ${PROJECT}
+echo "Updating and binding secret ${SECRET_NAME} from environment variables defined in file ${SECRET_ENV_FILE}"
+# DEPRECATED oc apply -f ${SECRET_ENV_FILE} -n ${PROJECT}
+oc create secret generic ${SECRET_NAME} --from-env-file=${SECRET_ENV_FILE} --dry-run -o yaml -n ${PROJECT} | oc replace -n ${PROJECT} -f -
 oc set env --from=secret/${SECRET_NAME} dc/${APP} -n ${PROJECT}
 
 echo "Rolling out the dc"
 oc rollout latest ${APP} -n ${PROJECT}
+
+echo "Deployment of ${PROJECT}/${APP} (app version v.${BUILD_TAG}) successfully completed"

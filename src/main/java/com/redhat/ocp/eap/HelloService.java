@@ -11,7 +11,7 @@ public class HelloService {
 
     String createHelloMessage(String name) {
 		try {
-            String dirConf = System.getProperty("config.dir");
+            String dirConf = System.getenv().get("CONFIG_DIR");
             String fileName="/settings.properties";
             Properties objProperties = new Properties();
             FileInputStream objFileInputStream = new FileInputStream(dirConf+fileName);
@@ -20,7 +20,7 @@ public class HelloService {
 
             Person person = personRepository.findByName(name);
 
-            return objProperties.getProperty("greeting") + " " + person.getFullName() + "!";
+            return person!=null ? objProperties.getProperty("greeting") + " " + person.getFullName() + "!" : "Cannot say " + objProperties.getProperty("greeting");
         } 
         catch (Exception e) {
 			throw new RuntimeException(e.getMessage());
