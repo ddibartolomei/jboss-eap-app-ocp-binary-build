@@ -114,7 +114,6 @@ for DEPLOY_VERSION_ID in $DEPLOYMENT_VERSIONS; do
 
     # Pause dc (stop any rollout running after dc creation)
     oc rollout pause dc ${VERSIONED_APP_NAME}
-    oc rollout cancel dc ${VERSIONED_APP_NAME}
 
     # Delete unuseful imagestream created by oc new-app command (both green and blue dc will shar the same imagestream name ${APP_NAMESPACE}/${APP_NAME})
     oc delete is/${VERSIONED_APP_NAME}
@@ -122,6 +121,29 @@ for DEPLOY_VERSION_ID in $DEPLOYMENT_VERSIONS; do
     echo "Patching the deployment config to remove automatic trigger for config/image change"
     # oc patch dc ${APP_NAME} -p '{"spec":{"triggers":[]}}' -o name ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM}
     oc set triggers dc/${VERSIONED_APP_NAME} --remove-all ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM}
+
+    # Set deployment config requests and/or limits
+    if [[ "${DEPLOYMENT_CPU_MEM_LIMITS_SET_ENABLED}" == "true" ]]; then
+        echo "Patching deployment config to set limits values for cpu and memory"
+        oc set resources dc ${VERSIONED_APP_NAME} --limits="cpu=${DEPLOYMENT_CPU_LIMITS},memory=${DEPLOYMENT_MEM_LIMITS}"
+    else
+        echo "Deployment config limits setting disabled, skipping..."
+    fi
+
+    if [[ "${DEPLOYMENT_CPU_MEM_REQUESTS_SET_ENABLED}" == "true" ]]; then
+        echo "Patching deployment config to set requests values for cpu and memory"
+        oc set resources dc ${VERSIONED_APP_NAME} --requests="cpu=${DEPLOYMENT_CPU_REQUESTS},memory=${DEPLOYMENT_MEM_REQUESTS}"
+    else
+        echo "Deployment config requests setting disabled, skipping..."
+    fi
+
+    # Set deployment config for deploment config (by default a Rolling strategy is set)
+    if [[ "${DEPLOYMENT_STRATEGY_RECREATE_ENABLED}" == "true" ]]; then
+        echo "Setting \"Recreate\" deployment strategy for deployment config"
+        oc patch dc ${VERSIONED_APP_NAME} -p "{\"spec\":{\"strategy\":{\"type\":\"Recreate\"}}}"
+    else
+        echo "Deployment strategy \"Recreate\" disabled, using default \"Rolling\" strategy"
+    fi
 
     # Setup config map
     if [[ "${CONFIG_MAP_ENABLED}" == "true" ]]; then
@@ -198,7 +220,7 @@ done
 # Expose app using route (by default start pointing to blue version)
 if [[ "${HTTPS_ROUTE_ENABLED}" == "true" ]]; then
     echo "Creating https route to expose the app (exposing 'blue' deployment version by default)"
-    oc create route passthrough ${APP_NAME} --service ${APP_NAME}-blue --port=8443 --insecure-policy=Redirect ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM}
+    oc create route passthrough ${APP_NAME} --service ${APP_NAME}-blue --port=${HTTPS_ROUTE_INTERNAL_PORT} --insecure-policy=Redirect ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM}
 else
     echo "Creating http route to expose the app (exposing 'blue' deployment version by default)"
     oc expose svc/${APP_NAME}-blue ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM}
@@ -210,3 +232,4 @@ oc label is ${APP_NAME} app=${APP_NAME} ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM}
 echo ""
 echo "Setup for ${APP_NAMESPACE}/${APP_NAME} deployment successfully completed"
 
+ 

@@ -129,6 +129,21 @@ if [ "$TARGET_IMAGE_IN_DC" != "$TARGET_IMAGE" ]; then
   exit 1
 fi
 
+# Set deployment config requests and/or limits
+if [[ "${DEPLOYMENT_CPU_MEM_LIMITS_SET_ENABLED}" == "true" ]]; then
+    echo "Updating deployment config to set limits values for cpu and memory"
+    oc set resources dc ${APP_NAME} --limits="cpu=${DEPLOYMENT_CPU_LIMITS},memory=${DEPLOYMENT_MEM_LIMITS}"
+else
+    echo "Deployment config limits setting disabled, skipping update..."
+fi
+
+if [[ "${DEPLOYMENT_CPU_MEM_REQUESTS_SET_ENABLED}" == "true" ]]; then
+    echo "Updating deployment config to set requests values for cpu and memory"
+    oc set resources dc ${APP_NAME} --requests="cpu=${DEPLOYMENT_CPU_REQUESTS},memory=${DEPLOYMENT_MEM_REQUESTS}"
+else
+    echo "Deployment config requests setting disabled, skipping update..."
+fi
+
 # Update config map
 if [[ "${CONFIG_MAP_ENABLED}" == "true" ]]; then
     echo "Updating config map ${CONFIG_MAP_NAME}"
