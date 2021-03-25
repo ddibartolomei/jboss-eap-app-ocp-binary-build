@@ -70,7 +70,7 @@ echo ""
 
 # Create app namespace
 echo "Creating project namespace ${APP_NAMESPACE}"
-oc new-project ${APP_NAMESPACE}
+oc new-project ${APP_NAMESPACE} ${OCP_PARAM} ${TOKEN_PARAM}
 
 # Bind service account with edit role to the app namespace
 echo "Binding edit role for namespace ${APP_NAMESPACE} to service account ${CICD_ENGINE_EDIT_SA}"

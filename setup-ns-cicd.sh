@@ -69,7 +69,7 @@ echo ""
 
 # Create CI/CD Engine namespace
 echo "Creating CI/CD Engine namespace ${CICD_ENGINE_NAMESPACE}"
-oc new-project ${CICD_ENGINE_NAMESPACE}
+oc new-project ${CICD_ENGINE_NAMESPACE} ${OCP_PARAM} ${TOKEN_PARAM}
 
 # Create service accounts
 echo "Creating service account ${CICD_ENGINE_EDIT_SA} to edit resources of application projects"
