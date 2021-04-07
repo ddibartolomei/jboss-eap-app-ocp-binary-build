@@ -111,7 +111,7 @@ fi
 # oc scale dc ${APP_NAME} --replicas=0
 
 # Pause dc (stop any rollout running after dc creation)
-oc rollout pause dc ${APP_NAME}
+oc rollout pause dc ${APP_NAME} ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM}
 
 echo "Patching the deployment config to remove automatic trigger for config/image change"
 # oc patch dc ${APP_NAME} -p '{"spec":{"triggers":[]}}' -o name ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM}
@@ -120,14 +120,14 @@ oc set triggers dc/${APP_NAME} --remove-all ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARA
 # Set deployment config requests and/or limits
 if [[ "${DEPLOYMENT_CPU_MEM_LIMITS_SET_ENABLED}" == "true" ]]; then
     echo "Patching deployment config to set limits values for cpu and memory"
-    oc set resources dc ${APP_NAME} --limits="cpu=${DEPLOYMENT_CPU_LIMITS},memory=${DEPLOYMENT_MEM_LIMITS}"
+    oc set resources dc ${APP_NAME} --limits="cpu=${DEPLOYMENT_CPU_LIMITS},memory=${DEPLOYMENT_MEM_LIMITS}" ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM}
 else
     echo "Deployment config limits setting disabled, skipping..."
 fi
 
 if [[ "${DEPLOYMENT_CPU_MEM_REQUESTS_SET_ENABLED}" == "true" ]]; then
     echo "Patching deployment config to set requests values for cpu and memory"
-    oc set resources dc ${APP_NAME} --requests="cpu=${DEPLOYMENT_CPU_REQUESTS},memory=${DEPLOYMENT_MEM_REQUESTS}"
+    oc set resources dc ${APP_NAME} --requests="cpu=${DEPLOYMENT_CPU_REQUESTS},memory=${DEPLOYMENT_MEM_REQUESTS}" ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM}
 else
     echo "Deployment config requests setting disabled, skipping..."
 fi
@@ -135,7 +135,7 @@ fi
 # Set deployment config for deploment config (by default a Rolling strategy is set)
 if [[ "${DEPLOYMENT_STRATEGY_RECREATE_ENABLED}" == "true" ]]; then
     echo "Setting \"Recreate\" deployment strategy for deployment config"
-    oc patch dc ${APP_NAME} -p "{\"spec\":{\"strategy\":{\"type\":\"Recreate\"}}}"
+    oc patch dc ${APP_NAME} -p "{\"spec\":{\"strategy\":{\"type\":\"Recreate\"}}}" ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM}
 else
     echo "Deployment strategy \"Recreate\" disabled, using default \"Rolling\" strategy"
 fi
@@ -216,7 +216,7 @@ else
 fi
 
 # Resume dc
-oc rollout resume dc ${APP_NAME}
+oc rollout resume dc ${APP_NAME} ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM}
 
 echo ""
 echo "Setup for ${APP_NAMESPACE}/${APP_NAME} deployment successfully completed"

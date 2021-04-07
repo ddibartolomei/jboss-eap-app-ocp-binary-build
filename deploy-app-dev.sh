@@ -132,14 +132,14 @@ fi
 # Set deployment config requests and/or limits
 if [[ "${DEPLOYMENT_CPU_MEM_LIMITS_SET_ENABLED}" == "true" ]]; then
     echo "Updating deployment config to set limits values for cpu and memory"
-    oc set resources dc ${APP_NAME} --limits="cpu=${DEPLOYMENT_CPU_LIMITS},memory=${DEPLOYMENT_MEM_LIMITS}"
+    oc set resources dc ${APP_NAME} --limits="cpu=${DEPLOYMENT_CPU_LIMITS},memory=${DEPLOYMENT_MEM_LIMITS}" ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM}
 else
     echo "Deployment config limits setting disabled, skipping update..."
 fi
 
 if [[ "${DEPLOYMENT_CPU_MEM_REQUESTS_SET_ENABLED}" == "true" ]]; then
     echo "Updating deployment config to set requests values for cpu and memory"
-    oc set resources dc ${APP_NAME} --requests="cpu=${DEPLOYMENT_CPU_REQUESTS},memory=${DEPLOYMENT_MEM_REQUESTS}"
+    oc set resources dc ${APP_NAME} --requests="cpu=${DEPLOYMENT_CPU_REQUESTS},memory=${DEPLOYMENT_MEM_REQUESTS}" ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM}
 else
     echo "Deployment config requests setting disabled, skipping update..."
 fi
