@@ -221,7 +221,7 @@ if [[ "${HTTPS_ROUTE_ENABLED}" == "true" ]]; then
     oc create route passthrough ${APP_NAME} --service ${APP_NAME}-blue --port=${HTTPS_ROUTE_INTERNAL_PORT} --insecure-policy=Redirect ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM}
 else
     echo "Creating http route to expose the app (exposing 'blue' deployment version by default)"
-    oc expose svc/${APP_NAME}-blue ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM}
+    oc expose svc/${APP_NAME}-blue --name=${APP_NAME} ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM}
 fi
 
 # Add label to the imagestream

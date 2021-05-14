@@ -146,7 +146,7 @@ if [[ "${HTTPS_ROUTE_ENABLED}" == "true" ]]; then
     oc create route passthrough ${APP_NAME} --service ${APP_NAME} --port=${HTTPS_ROUTE_INTERNAL_PORT} --insecure-policy=Redirect ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM}
 else
     echo "Creating http route to expose the app"
-    oc expose svc/${APP_NAME} ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM}
+    oc expose svc/${APP_NAME} --name=${APP_NAME} ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM}
 fi
 
 # Setup config map

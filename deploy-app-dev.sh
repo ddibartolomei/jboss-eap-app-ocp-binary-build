@@ -147,7 +147,7 @@ fi
 # Update config map
 if [[ "${CONFIG_MAP_ENABLED}" == "true" ]]; then
     echo "Updating config map ${CONFIG_MAP_NAME}"
-    oc create configmap ${CONFIG_MAP_NAME} --from-file=${CONFIG_MAP_RELATIVE_SOURCE_DIR} --dry-run=client -o yaml ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM} | oc replace ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM} -f -
+    oc create configmap ${CONFIG_MAP_NAME} --from-file=${CONFIG_MAP_RELATIVE_SOURCE_DIR} --dry-run -o yaml ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM} | oc replace ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM} -f -
     oc label configmap ${CONFIG_MAP_NAME} app=${APP_NAME} ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM}
 else
     echo "Config map disabled, skipping update..."
@@ -155,7 +155,7 @@ fi
 
 # Update secret for environment variables
 echo "Updating and binding secret ${SECRET_NAME} from environment variables defined in file ${SECRET_ENV_FILE}"
-oc create secret generic ${SECRET_NAME} --from-env-file=${SECRET_ENV_FILE} --dry-run=client -o yaml ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM} | oc replace ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM} -f -
+oc create secret generic ${SECRET_NAME} --from-env-file=${SECRET_ENV_FILE} --dry-run -o yaml ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM} | oc replace ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM} -f -
 oc label secret ${SECRET_NAME} app=${APP_NAME} ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM}
 oc set env --from=secret/${SECRET_NAME} dc/${APP_NAME} ${NAMESPACE_OCP_TOKEN_COMPOSITE_PARAM}
 
